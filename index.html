@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Hard Rock Solution - Song Lyric App</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,
+initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet"
+href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Custom css -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar  navbar-dark my-3">
+            <a class="navbar-brand" href="#">
+                <img src="images/logo.png" alt="Hard Rock Solution">
+            </a>
+            <button class="navbar-toggler" type="button"
+data-toggle="collapse" data-target="#collapsibleNavId"
+aria-controls="collapsibleNavId" aria-expanded="false"
+aria-label="Toggle navigation">
+                <img src="images/toggler-icon.svg" alt="">
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavId">
+                <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span
+class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#"
+id="dropdownId" data-toggle="dropdown" aria-haspopup="true"
+aria-expanded="false">Dropdown</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownId">
+                            <a class="dropdown-item" href="#">Action 1</a>
+                            <a class="dropdown-item" href="#">Action 2</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="content-area">
+            <div class="search-bar col-md-6 mx-auto">
+                <h1 class="text-center">Lyrics Search</h1>
+                <div class="search-box my-5">
+                        <input id="input-songname" type="text"
+                         class="form-control" placeholder="Enter your artist song name">
+                        <button id="music-search" class="btn
+                           btn-success search-btn">Search</button>
+                </div>
+            </div>
+
+
+            <!-- Single Lyrics -->
+            <div id="lyrics">
+
+            </div>
+
+            <!-- === Fancy results === -->
+            <div id="results" class="search-result col-md-8 mx-auto py-4">
+                <!-- single result -->
+            </div>
+
+
+        </main>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- Custom Script Here -->
+    <script>
+
+
+            document.getElementById('music-search').addEventListener('click',
+            musicSearch);
+
+            const inputSongname = document.getElementById('input-songname');
+            inputSongname.addEventListener('keypress', function(){
+                if(event.keyCode === 13){
+                    musicSearch();
+                }
+            })
+
+            // showing search result from 1 - 10
+            function musicSearch(){
+                document.getElementById('results').innerHTML = '';
+                document.getElementById('lyrics').innerHTML = '';
+                const inputSongname = document.getElementById('input-songname').value;
+                fetch(`https://api.lyrics.ovh/suggest/${inputSongname}`)
+                .then(res => res.json())
+                .then(data => {
+                    dataStored = data;
+                    for (let i = 0; i < data.data.length; i++) {
+                        const title = data.data[i].title;
+                        const artistName = data.data[i].artist.name;
+                        let musicDuration = data.data[i].duration;
+                        musicDuration = parseFloat(musicDuration);
+                        const id = data.data[i].id;
+                        document.getElementById('results').innerHTML +=
+                    `<div class="single-result row align-items-center my-3 p-3">
+                    <div class="col-md-4">
+                        <h3 class="lyrics-name">${title}</h3>
+                    <p class="author lead">Album by <span>${artistName}</span></p>
+                    <p class="author lead"> music Duration:${musicDuration}s </div>
+                    <div class="col-md-4 text-md-right text-center">
+                        <a href="#lyrics"><button onClick="seeLyrics(${id})" class="position1  btn btn-success">Get Lyrics</button></a>
+                    </div>
+                </div>`
+                if(i == 9){
+                        break;
+                    }
+                }
+
+            })
+        }
+
+        // see lyrics button and show lyrics
+        function seeLyrics(id){
+                for (let i = 0; i < 10; i++) {
+                if(dataStored.data[i].id == id){
+                    const artistName = dataStored.data[i].artist.name;
+                    const songTitle = dataStored.data[i].title;
+
+       fetch(`https://api.lyrics.ovh/v1/${artistName}/${songTitle}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        let lyrics = data.lyrics;
+                        if(lyrics == undefined){
+                            lyrics = `Lyrics Not Found.`;
+                        }
+                        document.getElementById('lyrics').innerHTML =
+                        `<div class="single-lyrics text-center">
+                            <h2 class="text-success mb-4">${songTitle} - ${artistName}</h2>
+                            <pre class="lyric text-white">${lyrics}</pre>
+                       </div>`
+
+                  document.getElementById('results').style.display='none';
+                    })
+
+
+                }
+            }
+
+
+        }
+
+    </script>
+
+</body>
+
+</html>
+
